@@ -25,7 +25,21 @@ steps:
   inputs:
     terraformVersion: 'latest'
 
+- task: TerraformTaskV3@3
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    backendServiceArm: 'azure'
+    backendAzureRmResourceGroupName: 'RG1'
+    backendAzureRmStorageAccountName: 'saterraformb'
+    backendAzureRmContainerName: 'tfstate'
+    backendAzureRmKey: 'ymlbr.tfstate'
 
+- task: TerraformTaskV3@3
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    environmentServiceNameAzureRM: 'azure'
 - task: TerraformTaskV3@3
   inputs:
     provider: 'azurerm'
