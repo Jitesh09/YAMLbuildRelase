@@ -6,47 +6,60 @@
 trigger:
 - main
 
-pool:
-  name: default
 
-steps:
-- task: CopyFiles@2
-  inputs:
-    Contents: '**'
-    TargetFolder: $(Build.ArtifactStagingDirectory)
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-    
-- task: TerraformInstaller@0
-  inputs:
-    terraformVersion: 'latest'
-- task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    artifactName: 'drop'
-    downloadPath: '$(System.ArtifactsDirectory)'
-- task: TerraformTaskV3@3
-  inputs:
-    provider: 'azurerm'
-    command: 'init'
-    backendServiceArm: 'azure'
-    backendAzureRmResourceGroupName: 'RG1'
-    backendAzureRmStorageAccountName: 'saterraformb'
-    backendAzureRmContainerName: 'tfstate'
-    backendAzureRmKey: 'ymlbr.tfstate'
-
-- task: TerraformTaskV3@3
-  inputs:
-    provider: 'azurerm'
-    command: 'plan'
-    environmentServiceNameAzureRM: 'azure'
-- task: TerraformTaskV3@3
-  inputs:
-    provider: 'azurerm'
-    command: 'apply'
-    environmentServiceNameAzureRM: 'azure'
+stages:
+- stage: Build
+  jobs:
+  - job: Build Job
+    pool:
+     name: default
+    steps:
+    - task: CopyFiles@2
+      displayName: Copy files
+      inputs:
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifacts
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+- stage: Deploy
+  jobs:
+  - job: Deploy Job
+    pool:
+     name: default
+    steps:
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+    - task: TerraformInstaller@0
+      displayName: Terraform Installer
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTaskV3@3
+      displayName: Terraform Init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'azure'
+        backendAzureRmResourceGroupName: 'RG1'
+        backendAzureRmStorageAccountName: 'saterraformb'
+        backendAzureRmContainerName: 'releasecontainer'
+        backendAzureRmKey: 'final.tfstate'
+    - task: TerraformTaskV3@3
+      displayName: Terraform plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        environmentServiceNameAzureRM: 'azure'
+    - task: TerraformTaskV3@3
+      displayName: Terraform apply
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        environmentServiceNameAzureRM: 'azure'
