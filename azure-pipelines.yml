@@ -20,11 +20,16 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
-
+    
 - task: TerraformInstaller@0
   inputs:
     terraformVersion: 'latest'
-
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'drop'
+    downloadPath: '$(System.ArtifactsDirectory)'
 - task: TerraformTaskV3@3
   inputs:
     provider: 'azurerm'
