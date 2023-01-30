@@ -10,7 +10,7 @@ trigger:
 stages:
 - stage: Build
   jobs:
-  - job: Build Job
+  - job: Build_Job
     pool:
      name: default
     steps:
@@ -27,7 +27,7 @@ stages:
         publishLocation: 'Container'
 - stage: Deploy
   jobs:
-  - job: Deploy Job
+  - job: Deploy_Job
     pool:
      name: default
     steps:
